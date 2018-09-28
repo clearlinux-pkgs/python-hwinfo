@@ -4,7 +4,7 @@
 #
 Name     : python-hwinfo
 Version  : 0.1.7
-Release  : 2
+Release  : 3
 URL      : https://github.com/rdobson/python-hwinfo/archive/0.1.7.tar.gz
 Source0  : https://github.com/rdobson/python-hwinfo/archive/0.1.7.tar.gz
 Summary  : No detailed summary available
@@ -25,6 +25,7 @@ BuildRequires : pytest
 BuildRequires : tox
 BuildRequires : virtualenv
 Patch1: 0001-python3-compat-fixes.patch
+Patch2: 0002-python2to3-conversion.patch
 
 %description
 [![Build Status](https://travis-ci.org/rdobson/python-hwinfo.svg?branch=master)](https://travis-ci.org/rdobson/python-hwinfo)
@@ -68,13 +69,14 @@ python3 components for the python-hwinfo package.
 %prep
 %setup -q -n python-hwinfo-0.1.7
 %patch1 -p1
+%patch2 -p1
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1537997556
+export SOURCE_DATE_EPOCH=1538171416
 python3 setup.py build -b py3
 
 %install

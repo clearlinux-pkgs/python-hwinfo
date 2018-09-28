@@ -1,0 +1,190 @@
+From d2df51d363300fbf3dd2302f0f8ecd06daa17839 Mon Sep 17 00:00:00 2001
+From: Ganesh Maharaj Mahalingam <ganesh.mahalingam@intel.com>
+Date: Fri, 28 Sep 2018 21:36:20 +0000
+Subject: [PATCH] Enable py3 support
+
+Signed-off-by: Ganesh Maharaj Mahalingam <ganesh.mahalingam@intel.com>
+---
+ hwinfo/pci/tests/test_lspci.py       |  8 ++++----
+ hwinfo/tools/inspector.py            | 22 +++++++++++-----------
+ hwinfo/tools/tests/test_inspector.py |  4 ++--
+ hwinfo/util/__init__.py              |  4 ++--
+ hwinfo/util/tests/parser_tests.py    |  2 +-
+ 5 files changed, 20 insertions(+), 20 deletions(-)
+
+diff --git a/hwinfo/pci/tests/test_lspci.py b/hwinfo/pci/tests/test_lspci.py
+index faae49d..21e470a 100644
+--- a/hwinfo/pci/tests/test_lspci.py
++++ b/hwinfo/pci/tests/test_lspci.py
+@@ -27,7 +27,7 @@ def setUp(self):
+         self.parser = LspciVVParser(data)
+ 
+     def _assert_rec_key(self, rec, key):
+-        self.assertEquals(rec[key], self.DEVICE_REC[key])
++        self.assertEqual(rec[key], self.DEVICE_REC[key])
+ 
+     def test_pci_device_string(self):
+         rec = self.parser.parse_items().pop()
+@@ -64,7 +64,7 @@ def test_parse_all_devices(self):
+         self.assertEqual(len(recs), 58)
+         found = False
+         for rec in recs:
+-            print rec
++            print(rec)
+             if rec['pci_device_bus_id'] == '02:00.0':
+                 self.assertEqual(rec['pci_device_class_name'], 'VGA compatible controller')
+                 found = True
+@@ -86,7 +86,7 @@ def setUp(self):
+         self.rec = self.parser.parse_items().pop()
+ 
+     def _assert_rec_key(self, key):
+-        self.assertEquals(self.rec[key], self.DEVICE_REC[key])
++        self.assertEqual(self.rec[key], self.DEVICE_REC[key])
+ 
+     def test_pci_device_bus_id(self):
+         self._assert_rec_key('pci_device_bus_id')
+@@ -138,7 +138,7 @@ def setUp(self):
+         self.rec = self.parser.parse_items()[0]
+ 
+     def _assert_rec_key(self, key):
+-        self.assertEquals(self.rec[key], self.DEVICE_REC[key])
++        self.assertEqual(self.rec[key], self.DEVICE_REC[key])
+ 
+     def test_pci_device_bus_id(self):
+         self._assert_rec_key('pci_device_bus_id')
+diff --git a/hwinfo/tools/inspector.py b/hwinfo/tools/inspector.py
+index fe71687..51642ee 100644
+--- a/hwinfo/tools/inspector.py
++++ b/hwinfo/tools/inspector.py
+@@ -39,10 +39,10 @@ def local_command(cmd):
+     process = subprocess.Popen(cmdstr, stdout=subprocess.PIPE, shell=True)
+     stdout, stderr = process.communicate()
+     if process.returncode == 0:
+-        return str(stdout).strip()
++        return (stdout.decode('utf-8')).strip()
+     else:
+-        print "RC: %s" % process.returncode
+-        print stdout
++        print("RC: %s" % process.returncode)
++        print(stdout)
+         raise Exception("stderr: %s" % str(stderr))
+ 
+ def find_in_tarball(tarball, filename):
+@@ -160,7 +160,7 @@ def get_info(self):
+ 
+         try:
+             os_rec = self.get_os_info()
+-            for k, v in os_rec.iteritems():
++            for k, v in os_rec.items():
+                 rec[k] = v
+         except Exception:
+             #Ignore failures. Only supports XS right now.
+@@ -198,13 +198,13 @@ def combine_recs(rec_list, key):
+     for rec in rec_list:
+         rec_key = rec[key]
+         if rec_key in final_recs:
+-            for k, v in rec.iteritems():
++            for k, v in rec.items():
+                 if k in final_recs[rec_key] and final_recs[rec_key][k] != v:
+                     raise Exception("Mis-match for key '%s'" % k)
+                 final_recs[rec_key][k] = v
+         else:
+             final_recs[rec_key] = rec
+-    return final_recs.values()
++    return list(final_recs.values())
+ 
+ 
+ class HostFromLogs(Host):
+@@ -234,7 +234,7 @@ def get_pci_devices(self):
+             return devs
+         except FileNotFound:
+             # Fall back to looking for the file lspci-vv.out
+-            print "***lspci-nnm.out found. Falling back to looking for lspci-vv.out and lspci-n.out.***"
++            print("***lspci-nnm.out found. Falling back to looking for lspci-vv.out and lspci-n.out.***")
+             lspci_vv_recs = parse_data(LspciVVParser, self._load_from_file('lspci-vv.out'))
+             lspci_n_recs = parse_data(LspciNParser, self._load_from_file('lspci-n.out'))
+             all_recs = lspci_vv_recs + lspci_n_recs
+@@ -302,7 +302,7 @@ def rec_to_table(rec):
+     table = PrettyTable(["Key", "Value"])
+     table.align['Key'] = 'l'
+     table.align['Value'] = 'l'
+-    for k, v in rec.iteritems():
++    for k, v in rec.items():
+         table.add_row([k, v])
+     return table
+ 
+@@ -345,7 +345,7 @@ def create_unit(title, content):
+ def validate_args(args):
+     if args.machine != 'localhost':
+         if not args.username or not args.password:
+-            print "Error: you must specify a username and password to query a remote machine."
++            print("Error: you must specify a username and password to query a remote machine.")
+             sys.exit(1)
+ 
+ def system_info(host, options):
+@@ -429,6 +429,6 @@ def main():
+         options = filter_choices
+ 
+     if args.export:
+-        print export_system_info(host, options)
++        print(export_system_info(host, options))
+     else:
+-        print system_info(host, options)
++        print(system_info(host, options))
+diff --git a/hwinfo/tools/tests/test_inspector.py b/hwinfo/tools/tests/test_inspector.py
+index 125d88c..53845ee 100644
+--- a/hwinfo/tools/tests/test_inspector.py
++++ b/hwinfo/tools/tests/test_inspector.py
+@@ -2,7 +2,7 @@
+ import mock
+ import sys
+ from mock import patch
+-from StringIO import StringIO
++from io import StringIO
+ 
+ from hwinfo.tools import inspector
+ import dummy_data
+@@ -180,7 +180,7 @@ def test_pci_filter_match_all(self):
+     def test_pci_filter_match_two(self):
+         devs = inspector.pci_filter(self.devices, ['02'])
+         for dev in devs:
+-            print dev.get_pci_class()
++            print(dev.get_pci_class())
+         self.assertEqual(len(devs), 2)
+ 
+     def test_pci_filter_match_one(self):
+diff --git a/hwinfo/util/__init__.py b/hwinfo/util/__init__.py
+index 100a2bf..12fd254 100644
+--- a/hwinfo/util/__init__.py
++++ b/hwinfo/util/__init__.py
+@@ -12,7 +12,7 @@ def combine_dicts(recs):
+ 
+     new_rec = {}
+     for rec in recs:
+-        for k, v in rec.iteritems():
++        for k, v in rec.items():
+             if k in new_rec:
+                 new_rec[k] = "%s, %s" % (new_rec[k], v)
+             else:
+@@ -60,7 +60,7 @@ def parse_items(self):
+             return [self.parse_item(self.DATA)]
+         else:
+             recs = []
+-            for data in self.DATA.decode().split(self.ITEM_SEPERATOR):
++            for data in str(self.DATA).split(self.ITEM_SEPERATOR):
+                 rec = self.parse_item(data)
+                 recs.append(rec)
+             return recs
+diff --git a/hwinfo/util/tests/parser_tests.py b/hwinfo/util/tests/parser_tests.py
+index e513390..95f7024 100644
+--- a/hwinfo/util/tests/parser_tests.py
++++ b/hwinfo/util/tests/parser_tests.py
+@@ -10,7 +10,7 @@ def test_parse_item(self):
+ 	cp = CommandParser()
+ 	cp.ITEM_REGEXS = [r'four:\ (?P<num>\w+)']
+ 	rec = cp.parse_item(data)
+-	self.assertEquals(rec['num'], '845')
++	self.assertEqual(rec['num'], '845')
+ 
+     def test_parse_items(self):
+         data = """
