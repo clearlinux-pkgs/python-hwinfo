@@ -4,7 +4,7 @@
 #
 Name     : python-hwinfo
 Version  : 0.1.7
-Release  : 6
+Release  : 7
 URL      : https://github.com/rdobson/python-hwinfo/archive/0.1.7.tar.gz
 Source0  : https://github.com/rdobson/python-hwinfo/archive/0.1.7.tar.gz
 Summary  : No detailed summary available
@@ -14,9 +14,11 @@ Requires: python-hwinfo-bin = %{version}-%{release}
 Requires: python-hwinfo-license = %{version}-%{release}
 Requires: python-hwinfo-python = %{version}-%{release}
 Requires: python-hwinfo-python3 = %{version}-%{release}
+Requires: dmidecode
 Requires: paramiko
 Requires: prettytable
 BuildRequires : buildreq-distutils3
+BuildRequires : dmidecode
 BuildRequires : paramiko
 BuildRequires : pluggy
 BuildRequires : prettytable
@@ -76,14 +78,21 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1538171416
-python3 setup.py build -b py3
+export SOURCE_DATE_EPOCH=1559668066
+export GCC_IGNORE_WERROR=1
+export CFLAGS="$CFLAGS -fno-lto "
+export FCFLAGS="$CFLAGS -fno-lto "
+export FFLAGS="$CFLAGS -fno-lto "
+export CXXFLAGS="$CXXFLAGS -fno-lto "
+export MAKEFLAGS=%{?_smp_mflags}
+python3 setup.py build
 
 %install
+export MAKEFLAGS=%{?_smp_mflags}
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/python-hwinfo
 cp LICENSE %{buildroot}/usr/share/package-licenses/python-hwinfo/LICENSE
-python3 -tt setup.py build -b py3 install --root=%{buildroot}
+python3 -tt setup.py build  install --root=%{buildroot}
 echo ----[ mark ]----
 cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :
 echo ----[ mark ]----
@@ -96,7 +105,7 @@ echo ----[ mark ]----
 /usr/bin/hwinfo
 
 %files license
-%defattr(-,root,root,-)
+%defattr(0644,root,root,0755)
 /usr/share/package-licenses/python-hwinfo/LICENSE
 
 %files python
