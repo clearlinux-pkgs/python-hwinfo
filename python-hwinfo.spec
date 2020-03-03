@@ -4,7 +4,7 @@
 #
 Name     : python-hwinfo
 Version  : 0.1.7
-Release  : 10
+Release  : 11
 URL      : https://github.com/rdobson/python-hwinfo/archive/0.1.7.tar.gz
 Source0  : https://github.com/rdobson/python-hwinfo/archive/0.1.7.tar.gz
 Summary  : No detailed summary available
@@ -70,6 +70,7 @@ python3 components for the python-hwinfo package.
 
 %prep
 %setup -q -n python-hwinfo-0.1.7
+cd %{_builddir}/python-hwinfo-0.1.7
 %patch1 -p1
 %patch2 -p1
 
@@ -77,8 +78,9 @@ python3 components for the python-hwinfo package.
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
-export LANG=C
-export SOURCE_DATE_EPOCH=1559668066
+export LANG=C.UTF-8
+export SOURCE_DATE_EPOCH=1583212493
+# -Werror is for werrorists
 export GCC_IGNORE_WERROR=1
 export CFLAGS="$CFLAGS -fno-lto "
 export FCFLAGS="$CFLAGS -fno-lto "
@@ -91,7 +93,7 @@ python3 setup.py build
 export MAKEFLAGS=%{?_smp_mflags}
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/python-hwinfo
-cp LICENSE %{buildroot}/usr/share/package-licenses/python-hwinfo/LICENSE
+cp %{_builddir}/python-hwinfo-0.1.7/LICENSE %{buildroot}/usr/share/package-licenses/python-hwinfo/01a6b4bf79aca9b556822601186afab86e8c4fbf
 python3 -tt setup.py build  install --root=%{buildroot}
 echo ----[ mark ]----
 cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :
@@ -106,7 +108,7 @@ echo ----[ mark ]----
 
 %files license
 %defattr(0644,root,root,0755)
-/usr/share/package-licenses/python-hwinfo/LICENSE
+/usr/share/package-licenses/python-hwinfo/01a6b4bf79aca9b556822601186afab86e8c4fbf
 
 %files python
 %defattr(-,root,root,-)
