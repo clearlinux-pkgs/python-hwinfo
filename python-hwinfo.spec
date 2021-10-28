@@ -4,7 +4,7 @@
 #
 Name     : python-hwinfo
 Version  : 0.1.7
-Release  : 21
+Release  : 22
 URL      : https://github.com/rdobson/python-hwinfo/archive/0.1.7.tar.gz
 Source0  : https://github.com/rdobson/python-hwinfo/archive/0.1.7.tar.gz
 Summary  : No detailed summary available
